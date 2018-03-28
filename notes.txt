@@ -1,0 +1,66 @@
+input:
+0
+  replace last token: firstInputAfterEquals === true, last token is instanceof FloatObject and equals 0 but answerFlag is false
+  append new token: last token is instanceof OperatorObject
+  modify last token: append when last input is instanceof FloatObject and does not equal to 0 and answerFlag is false
+  ignore: last token is ANS
+1-9
+  replace last token: firstInputAfterEquals === true, last token is instanceof FloatObject and equals 0 but answerFlag is false
+  append new token: last token is instanceof OperatorObject
+  modify last token: append when last input is instanceof FloatObject and does not equal to 0 and answerFlag is false,
+  ignore: last token is ANS
+.
+  replace last token: firstInputAfterEquals === true
+  append new token: last token is instanceof OperatorObject
+  modify last token: append when last input is instanceof FloatObject and answerFlag is false and does not contain decimal point
+  ignore: last token is ANS, last token is instanceof FloatObject and already has a decimal point
+ANS
+  replace last token: firstInputAfterEquals === true
+  append new token: last token is instanceof OperatorObject
+  modify last token:
+  ignore: last token is instanceof FloatObject
++,-,*,/
+  replace last token: last input is instanceof OperatorObject
+  append new token: last input is instanceof FloatObject
+  modify last token:
+  ignore:
+
+{
+content: [0-9,.,ANS,+,-,*,/],
+isWaitingForFirstInputAfterEquals: T/F,
+last token instanceof FloatObject: T/F,
+last token is ANS: T/F
+last token is 0: T/F
+last token has decimal point: T/F
+}
+
+--------------------------------------------------------------------------------
+
+{0, T}: replaceLastToken(new FloatingObject(0, false))
+{0, F, T, T}: ignore()
+{0, F, T, F, T, F}: replaceLastToken(new FloatingObject(0, false))/ignore()
+{0, F, T, F, F, T}: appendContentToLastToken(0)
+{0, F, T, F, F, F}: appendContentToLastToken(0)
+{0, F, F}: appendNewToken(new FloatingObject(0, false))
+  ...
+{9, F, F}: appendNewToken(new FloatingObject(9, false))
+{., T}: replaceLastToken(new FloatingObject("."), false)
+{., F, T, T}: ignore()
+{., F, T, F, T, F}: appendContentToLastToken(".")
+{., F, T, F, F, T}: ignore()
+{., F, T, F, F, F}: appendContentToLastToken(".")
+{., F, F}: appendNewToken(new FloatingObject("."), false)
+{ANS, T}: replaceLastToken(new FloatingObject(ANS, true))
+{ANS, F, T, T}: replaceLastToken(new FloatingObject(ANS, true))/ignore()
+{ANS, F, T, F, T, F}: replaceLastToken(new FloatingObject(ANS, true))
+{ANS, F, T, F, F, T}: ignore()
+{ANS, F, T, F, F, F}: ignore()
+{ANS, F, F}: appendNewToken(new FloatingObject(ANS, true))
+{+, T}: appendNewToken(new OperatorObject("+"))
+{+, F, T, T}: appendNewToken(new OperatorObject("+"))
+{+, F, T, F, T, F}: appendNewToken(new OperatorObject("+"))
+{+, F, T, F, F, T}: appendNewToken(new OperatorObject("+"))
+{+, F, T, F, F, F}: appendNewToken(new OperatorObject("+"))
+{+, F, F}: replaceLastToken(new OperatorObject("+"))
+  ...
+{-, F, F}: replaceLastToken(new OperatorObject("-"))/ignore()

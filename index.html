@@ -8,10 +8,10 @@
   <button-draw
     v-for="input in inputs"
     v-bind:content="input.content"
-    v-on:press="updateDisplay(input)"
+    v-on:press="respondToInput(input)"
   ></button-draw>
   <div id="display">
-    {{result}}
+    {{display}}
   </div>
 </div>
 
