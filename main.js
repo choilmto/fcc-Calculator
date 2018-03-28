@@ -36,26 +36,26 @@ var appendContent = function (result, content, answer) {
 };
 
 function inputAcceptable (result) {
-  const allowableChars = /^[\d\.\+\-\*\/]*$/;
-  const digits = /\d/;
-  if (allowableChars.test(result)) {
-    return true;
+  const disallowedChars = /^[^\d\.\+\-\*\/]*$/;
+  //result = result.replace(answer.afterComputation, "(" + answer.beforeComputation + ")");
+  if (disallowedChars.test(result)) {
+    return false;
   }
-  if (digits.test(result[result.length - 1])) {
-    return true;
+  if (Number.isNaN(parseInt(result[result.length - 1]))) {
+    return false;
   }
+  return true;
 }
 
 var useEval = function (result) {
   if (inputAcceptable(result)) {
-    return {result: eval(result), answer: true};
+    return {result: eval(result),
+      answer: true}
   }
   //check to see
-    //scientific notation
+    //when answer is in scientific notation
     //when answer is 'infinity'
     //figure out eval() errors
-    //'.' as an entry
-    //handle answer behaviour
   return "0";
 };
 
@@ -86,7 +86,7 @@ var app = new Vue ({
       {content: 'AC', processInput: clearDisplay}
     ],
     result: "0",
-    answer: false
+    answer: ""
   },
   methods: {
     updateDisplay: function (input) {
@@ -95,7 +95,7 @@ var app = new Vue ({
         this.answer = resultOfProcessInput.answer;
         resultOfProcessInput = resultOfProcessInput.result;
       } else {
-        this.answer = false;
+        this.answer = "";
       }
       this.result = resultOfProcessInput;
     }
