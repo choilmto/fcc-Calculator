@@ -1,13 +1,15 @@
 //TO DO:
-  //when answer is in scientific notation
-  //when answer is 'infinity'
+  //making a factory for math functions
+  //proofread/refactor
+  //come up with list of possible extensions
+  //send it out to be checked by ppl
+
 
 //global components
 Vue.component('button-draw', {
   props: ['content'],
   template: '<button v-on:click="$emit(\'press\')">{{content}}</button>'
 });
-
 
 function contentAcceptable (result, content) {
   const lastEntryHasDecimalPoint = /\.\d*$/;
@@ -40,15 +42,11 @@ var appendContent = function (result, content, answer) {
 };
 
 function inputAcceptable (result) {
-  const disallowedChars = /^[^\d\.\+\-\*\/]*$/;
-  //result = result.replace(answer.afterComputation, "(" + answer.beforeComputation + ")");
-  if (disallowedChars.test(result)) {
-    return false;
+  const allowedChars = /e\+|[\d\.\+\-\*\/]|Infinity/g;
+  if (result.match(allowedChars).join("") === result) {
+    return true;
   }
-  /*if (Number.isNaN(parseInt(result[result.length - 1]))) {
-    return false;
-  }*/
-  return true;
+  return false;
 }
 
 var useEval = function (result) {
