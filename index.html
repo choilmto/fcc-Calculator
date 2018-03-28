@@ -8,7 +8,7 @@
   <button-draw
     v-for="input in inputs"
     v-bind:content="input.content"
-    v-on:press="input.processInput"
+    v-on:press="result=input.processInput(result, input.content)"
   ></button-draw>
   <div id="display">
     {{result}}

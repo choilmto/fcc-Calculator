@@ -4,9 +4,20 @@ Vue.component('button-draw', {
   template: '<button v-on:click="$emit(\'press\')">{{content}}</button>'
 });
 
-var updateDisplay = function (){};
-var useEval = function (){};
-var clearDisplay = function (){};
+var updateDisplay = function (result, content){
+  return result + content;
+};
+
+var useEval = function (result){
+  if (/[\d\.\+\-\*\/]*/.test(result)) {
+    return "0";
+  }
+  return eval(result);
+};
+
+var clearDisplay = function (){
+  return "0";
+};
 
 var app = new Vue ({
   el: '#app',
