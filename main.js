@@ -17,31 +17,45 @@ function contentAcceptable (result, content) {
   return true;
 }
 
-function omitExtraneousZero (result) {
+function adjustResult (result, content, answer) {
   const lastEntry = /[\d\.]*$/;
-  if (lastEntry.exec(result)[0] === "0") {
+  if (answer && Number.isInteger(parseInt(content))) {
+    return "";
+  }
+  if ((lastEntry.exec(result)[0] === "0") && Number.isInteger(parseInt(content))){
     return result.substr(0, result.length - 1);
   }
   return result;
 }
 
-var appendContent = function (result, content) {
+var appendContent = function (result, content, answer) {
   if (contentAcceptable(result, content)) {
-    return omitExtraneousZero(result) + content;
+    return adjustResult(result, content, answer) + content;
   }
   return result;
 };
 
-var useEval = function (result) {
+function inputAcceptable (result) {
   const allowableChars = /^[\d\.\+\-\*\/]*$/;
+  const digits = /\d/;
   if (allowableChars.test(result)) {
-    return eval(result);
+    return true;
   }
-  //check to see if the number-operator-number pattern is correct
-    //really big numbers
-    //division by 0
-    //figure out eval() behaviour
-    //decimal formatting?
+  if (digits.test(result[result.length - 1])) {
+    return true;
+  }
+}
+
+var useEval = function (result) {
+  if (inputAcceptable(result)) {
+    return {result: eval(result), answer: true};
+  }
+  //check to see
+    //scientific notation
+    //when answer is 'infinity'
+    //figure out eval() errors
+    //'.' as an entry
+    //handle answer behaviour
   return "0";
 };
 
@@ -72,10 +86,18 @@ var app = new Vue ({
       {content: 'AC', processInput: clearDisplay}
     ],
     result: "0",
+    answer: false
   },
   methods: {
     updateDisplay: function (input) {
-      this.result = input.processInput(this.result, input.content);
+      var resultOfProcessInput = input.processInput(this.result, input.content, this.answer);
+      if (typeof resultOfProcessInput === 'object') {
+        this.answer = resultOfProcessInput.answer;
+        resultOfProcessInput = resultOfProcessInput.result;
+      } else {
+        this.answer = false;
+      }
+      this.result = resultOfProcessInput;
     }
   }
 });
