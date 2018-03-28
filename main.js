@@ -4,12 +4,13 @@ Vue.component('button-draw', {
   template: '<button v-on:click="$emit(\'press\')">{{content}}</button>'
 });
 
-var updateDisplay = function (result, content){
+var appendContent = function (result, content){
   return result + content;
 };
 
 var useEval = function (result){
-  if (/[\d\.\+\-\*\/]*/.test(result)) {
+  const allowableChars = /^[\d\.\+\-\*\/]*$/;
+  if (allowableChars.test(result)) {
     return "0";
   }
   return eval(result);
@@ -23,24 +24,29 @@ var app = new Vue ({
   el: '#app',
   data: {
     inputs: [
-      {content: '1', processInput: updateDisplay},
-      {content: '2', processInput: updateDisplay},
-      {content: '3', processInput: updateDisplay},
-      {content: '4', processInput: updateDisplay},
-      {content: '5', processInput: updateDisplay},
-      {content: '6', processInput: updateDisplay},
-      {content: '7', processInput: updateDisplay},
-      {content: '8', processInput: updateDisplay},
-      {content: '9', processInput: updateDisplay},
-      {content: '0', processInput: updateDisplay},
-      {content: '.', processInput: updateDisplay},
-      {content: '+', processInput: updateDisplay},
-      {content: '-', processInput: updateDisplay},
-      {content: '*', processInput: updateDisplay},
-      {content: '/', processInput: updateDisplay},
+      {content: '1', processInput: appendContent},
+      {content: '2', processInput: appendContent},
+      {content: '3', processInput: appendContent},
+      {content: '4', processInput: appendContent},
+      {content: '5', processInput: appendContent},
+      {content: '6', processInput: appendContent},
+      {content: '7', processInput: appendContent},
+      {content: '8', processInput: appendContent},
+      {content: '9', processInput: appendContent},
+      {content: '0', processInput: appendContent},
+      {content: '.', processInput: appendContent},
+      {content: '+', processInput: appendContent},
+      {content: '-', processInput: appendContent},
+      {content: '*', processInput: appendContent},
+      {content: '/', processInput: appendContent},
       {content: '=', processInput: useEval},
       {content: 'AC', processInput: clearDisplay}
     ],
     result: "0",
+  },
+  methods: {
+    updateDisplay: function (input){
+      this.result = input.processInput(this.result, input.content);
+    }
   }
 });
