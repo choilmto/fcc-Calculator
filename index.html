@@ -3,9 +3,18 @@
 </head>
 
 <body>
+
 <div id="app">
-  <button-draw></button-draw>
+  <button-draw
+    v-for="input in inputs"
+    v-bind:content="input.content"
+    v-on:press="result += $event"
+  ></button-draw>
+  <div id="display">
+    {{result}}
+  </div>
 </div>
+
 <script src="vue.js"></script>
 <script src="main.js"></script>
 </body>
