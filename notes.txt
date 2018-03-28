@@ -1,0 +1,8 @@
+//display answer in scientific notation; introduce a back button
+display interface
+  to currentEntry
+  to totalEntry
+changecurrentEntry interface (?)
+changetotalEntry interface (?)
+event interface
+controller interface
