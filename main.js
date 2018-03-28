@@ -1,3 +1,7 @@
+//TO DO:
+  //when answer is in scientific notation
+  //when answer is 'infinity'
+
 //global components
 Vue.component('button-draw', {
   props: ['content'],
@@ -41,21 +45,22 @@ function inputAcceptable (result) {
   if (disallowedChars.test(result)) {
     return false;
   }
-  if (Number.isNaN(parseInt(result[result.length - 1]))) {
+  /*if (Number.isNaN(parseInt(result[result.length - 1]))) {
     return false;
-  }
+  }*/
   return true;
 }
 
 var useEval = function (result) {
   if (inputAcceptable(result)) {
-    return {result: eval(result),
-      answer: true}
+    try {
+      return {result: eval(result),
+        answer: true};
+    }
+    catch(e) {
+      window.alert(e);
+    }
   }
-  //check to see
-    //when answer is in scientific notation
-    //when answer is 'infinity'
-    //figure out eval() errors
   return "0";
 };
 
