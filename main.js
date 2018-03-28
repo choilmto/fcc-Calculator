@@ -1,26 +1,18 @@
-//TO DO:
-  //making a factory for math functions
-  //proofread/refactor
-  //come up with list of possible extensions
-  //send it out to be checked by ppl
-
-
-//global components
 Vue.component('button-draw', {
   props: ['content'],
   template: '<button v-on:click="$emit(\'press\')">{{content}}</button>'
 });
 
-function contentAcceptable (result, content) {
+function adjustContent (result, content) {
   const lastEntryHasDecimalPoint = /\.\d*$/;
   const operatorsAtEnd = /[\+\-\*\/]$/;
-  if (operatorsAtEnd.test(content) && operatorsAtEnd.test(result)) {
-    return false;
+  if (operatorsAtEnd.test(content) && operatorsAtEnd.test(result[result.length - 1])) {
+    return "";
   }
   if (lastEntryHasDecimalPoint.test(content) && lastEntryHasDecimalPoint.test(result)) {
-    return false;
+    return "";
   }
-  return true;
+  return content;
 }
 
 function adjustResult (result, content, answer) {
@@ -35,31 +27,26 @@ function adjustResult (result, content, answer) {
 }
 
 var appendContent = function (result, content, answer) {
-  if (contentAcceptable(result, content)) {
-    return adjustResult(result, content, answer) + content;
-  }
-  return result;
+  return adjustResult(result, content, answer) + adjustContent(result, content);
 };
 
-function inputAcceptable (result) {
+function filteredResultForEval (result) {
   const allowedChars = /e\+|[\d\.\+\-\*\/]|Infinity/g;
   if (result.match(allowedChars).join("") === result) {
-    return true;
+    return result;
   }
-  return false;
+  return 0;
 }
 
 var useEval = function (result) {
-  if (inputAcceptable(result)) {
-    try {
-      return {result: eval(result),
-        answer: true};
-    }
-    catch(e) {
-      window.alert(e);
-    }
+  try {
+    return {result: eval(filteredResultForEval(result)),
+      answer: true};
   }
-  return "0";
+  catch(e) {
+    window.alert(e);
+    return "0";
+  }
 };
 
 var clearDisplay = function () {
