@@ -18,20 +18,18 @@ var appendAnswer = function (tokens, answer, isWaitingForFirstInputAfterEquals) 
   if (answer === "") {
     return tokens;
   }
-  if (isWaitingForFirstInputAfterEquals) {
-    tokens.pop();
+  if (tokens[tokens.length - 1] instanceof OperatorObject) {
+    tokens.push(new FloatObject("", {isAnswer: false}));
   }
-  if (isWaitingForFirstInputAfterEquals || (tokens[tokens.length - 1] instanceof OperatorObject)) {
-    tokens.push(new FloatObject("", {isAnswer: true}));
-  }
-  if ((tokens[tokens.length - 1] instanceof FloatObject) && ((tokens[tokens.length - 1].displayPart === "") || (tokens[tokens.length - 1].displayPart === "0"))){
+  if (isWaitingForFirstInputAfterEquals || ((tokens[tokens.length - 1].displayPart === "") || (tokens[tokens.length - 1].displayPart === "0"))){
     tokens[tokens.length - 1].displayPart = answer;
+    tokens[tokens.length - 1].isAnswer = true;
   }
   return tokens;
 }
 
 var appendOperator = function (tokens, operator, isWaitingForFirstInputAfterEquals) {
-  if (isWaitingForFirstInputAfterEquals || tokens[tokens.length - 1] instanceof FloatObject) {
+  if (tokens[tokens.length - 1] instanceof FloatObject) {
     tokens.push(new OperatorObject(""));
   }
   if (tokens[tokens.length - 1] instanceof OperatorObject) {
@@ -41,21 +39,19 @@ var appendOperator = function (tokens, operator, isWaitingForFirstInputAfterEqua
 }
 
 var appendContent = function (tokens, content, isWaitingForFirstInputAfterEquals) {
-  if (isWaitingForFirstInputAfterEquals) {
-    tokens.pop();
+  if ((content === ".") && /\./.test(tokens[tokens.length - 1].displayPart) || tokens[tokens.length - 1].isAnswer) {
+    return tokens;
   }
   if (isWaitingForFirstInputAfterEquals || (tokens[tokens.length - 1] instanceof OperatorObject)) {
+    if (isWaitingForFirstInputAfterEquals) {
+      tokens.pop();
+    }
     tokens.push(new FloatObject("", {isAnswer: false}));
-  }
-  if ((content === ".") && /\./.test(tokens[tokens.length - 1].displayPart)) {
-    return tokens;
   }
   if ((content !== ".") && (tokens[tokens.length - 1].displayPart === "0")) {
     tokens[tokens.length - 1].displayPart = "";
   }
-  if ((!tokens[tokens.length - 1].isAnswer) && (tokens[tokens.length - 1] instanceof FloatObject)) {
-    tokens[tokens.length - 1].displayPart += content;
-  }
+  tokens[tokens.length - 1].displayPart += content;
   return tokens;
 };
 
@@ -135,9 +131,9 @@ var app = new Vue ({
   methods: {
     respondToInput: function (input) {
       if (input.content === "ANS") {
-        this.tokens = input.processInput(this.tokens, this.answer, this.isWaitingForFirstInputAfterEquals)
+        this.tokens = input.processInput(this.tokens, this.answer, this.isWaitingForFirstInputAfterEquals);
       } else {
-        this.tokens = input.processInput(this.tokens, input.content, this.isWaitingForFirstInputAfterEquals)
+        this.tokens = input.processInput(this.tokens, input.content, this.isWaitingForFirstInputAfterEquals);
       }
       if ((this.tokens[this.tokens.length - 1].isAnswer) && (input.content === "=")) {
         this.tokens[this.tokens.length - 1].isAnswer = false;
