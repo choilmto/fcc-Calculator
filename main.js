@@ -15,14 +15,17 @@ function OperatorObject (operator) {
 }
 
 var appendAnswer = function (tokens, answer, isWaitingForFirstInputAfterEquals) {
+  if (answer === "") {
+    return tokens;
+  }
   if (isWaitingForFirstInputAfterEquals) {
     tokens.pop();
   }
   if (isWaitingForFirstInputAfterEquals || (tokens[tokens.length - 1] instanceof OperatorObject)) {
     tokens.push(new FloatObject("", {isAnswer: true}));
   }
-  if ((tokens[tokens.length - 1] instanceof FloatObject) && ((tokens[tokens.length - 1].displayPart === "") || (token[tokens.length - 1].displayPart === "0"))){
-    tokens[tokens.length - 1].display = answer;
+  if ((tokens[tokens.length - 1] instanceof FloatObject) && ((tokens[tokens.length - 1].displayPart === "") || (tokens[tokens.length - 1].displayPart === "0"))){
+    tokens[tokens.length - 1].displayPart = answer;
   }
   return tokens;
 }
@@ -59,7 +62,7 @@ var appendContent = function (tokens, content, isWaitingForFirstInputAfterEquals
 function filteredResultForEval (tokens) {
   if (tokens.every(function (currentValue) {
     if (currentValue instanceof FloatObject) {
-      return (currentValue.displayPart === "Infinity") || (Number.parseFloat(currentValue.displayPart).toString() == currentValue.displayPart);
+      return (currentValue.displayPart === "Infinity") || (Number.parseFloat(currentValue.displayPart) == currentValue.displayPart);
     }
     return (currentValue instanceof OperatorObject) && (currentValue.displayPart in operatorSet);
   })) {
@@ -70,15 +73,19 @@ function filteredResultForEval (tokens) {
       if (currentValue instanceof OperatorObject) {
         return accumulator + operatorSet[currentValue.displayPart];
       }
-      throw "Array.reduce() error";
+      throw "Input(1) error.";
     }, "");
   }
-  throw "Array.every() error";
+  throw "Input(2) error.";
 }
 
 var useEval = function (tokens) {
   try {
-    return [new FloatObject(eval(filteredResultForEval(tokens)).toString(), {isAnswer: true})];
+    var resultFromEval = eval(filteredResultForEval(tokens)).toString();
+    if (isNaN(resultFromEval)) {
+      throw ("Not a number.");
+    }
+    return [new FloatObject(resultFromEval, {isAnswer: true})];
   }
   catch(e) {
     window.alert(e);
@@ -128,9 +135,10 @@ var app = new Vue ({
   methods: {
     respondToInput: function (input) {
       if (input.content === "ANS") {
-        input.content = this.answer;
+        this.tokens = input.processInput(this.tokens, this.answer, this.isWaitingForFirstInputAfterEquals)
+      } else {
+        this.tokens = input.processInput(this.tokens, input.content, this.isWaitingForFirstInputAfterEquals)
       }
-      this.tokens = input.processInput(this.tokens, input.content, this.isWaitingForFirstInputAfterEquals);
       if ((this.tokens[this.tokens.length - 1].isAnswer) && (input.content === "=")) {
         this.tokens[this.tokens.length - 1].isAnswer = false;
         this.answer = this.tokens[this.tokens.length - 1].displayPart;
