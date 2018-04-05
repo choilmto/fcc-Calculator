@@ -41,7 +41,7 @@ var appendContent = function (tokens, content, isWaitingForFirstInputAfterEquals
   if (isWaitingForFirstInputAfterEquals) {
     tokens.pop();
   }
-  if (tokens[tokens.length - 1] instanceof OperatorObject) {
+  if (isWaitingForFirstInputAfterEquals || (tokens[tokens.length - 1] instanceof OperatorObject)) {
     tokens.push(new FloatObject("", {isAnswer: false}));
   }
   if ((content === ".") && /\./.test(tokens[tokens.length - 1].displayPart)) {
@@ -58,9 +58,8 @@ var appendContent = function (tokens, content, isWaitingForFirstInputAfterEquals
 
 function filteredResultForEval (tokens) {
   if (tokens.every(function (currentValue) {
-    console.log(currentValue.displayPart);
     if (currentValue instanceof FloatObject) {
-      return (currentValue.displayPart === "Infinity") || (Number.parseFloat(currentValue.displayPart).toString() === currentValue.displayPart);
+      return (currentValue.displayPart === "Infinity") || (Number.parseFloat(currentValue.displayPart).toString() == currentValue.displayPart);
     }
     return (currentValue instanceof OperatorObject) && (currentValue.displayPart in operatorSet);
   })) {
@@ -79,7 +78,6 @@ function filteredResultForEval (tokens) {
 
 var useEval = function (tokens) {
   try {
-    //console.log(tokens);
     return [new FloatObject(eval(filteredResultForEval(tokens)).toString(), {isAnswer: true})];
   }
   catch(e) {
@@ -95,7 +93,8 @@ var clearDisplay = function () {
 var inputsArray = (function () {
   var arrayButtons = [{content: 'AC', processInput: clearDisplay},
     {content: '=', processInput: useEval},
-    {content: 'ANS', processInput: appendAnswer}
+    {content: 'ANS', processInput: appendAnswer},
+    {content: ".", processInput: appendContent}
   ];
 
   for (var i = 0; i <= 9; i++) {
