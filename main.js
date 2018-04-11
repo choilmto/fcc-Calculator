@@ -5,57 +5,58 @@ const operatorSet = {
   "*": "*"
 };
 
-function FloatObject (float, flags) {
-  this.displayPart = float;  //should be in string form
-  this.isAnswer = flags.isAnswer;
+class FloatObject {
+  constructor (float, flags) {
+    this.displayPart = float;  //should be in string form
+    this.isAnswer = flags.isAnswer;
+  }
 }
 
-function OperatorObject (operator) {
-  this.displayPart = operator;
+class OperatorObject {
+  constructor (operator) {
+    this.displayPart = operator;
+  }
 }
 
-var appendAnswer = function (tokens, answer, isWaitingForFirstInputAfterEquals) {
+const appendAnswer = (tokens, answer, isWaitingForFirstInputAfterEquals) => {
   if (answer === "") {
     return tokens;
   }
-  if (tokens[tokens.length - 1] instanceof OperatorObject) {
-    tokens.push(new FloatObject("", {isAnswer: false}));
+  let lastToken = tokens[tokens.length - 1];
+  if (lastToken instanceof OperatorObject) {
+    return tokens.concat([new FloatObject(answer, {isAnswer: true})]);
   }
-  if (isWaitingForFirstInputAfterEquals || ((tokens[tokens.length - 1].displayPart === "") || (tokens[tokens.length - 1].displayPart === "0"))){
-    tokens[tokens.length - 1].displayPart = answer;
-    tokens[tokens.length - 1].isAnswer = true;
+  if (isWaitingForFirstInputAfterEquals || ((lastToken.displayPart === "") || (lastToken.displayPart === "0"))){
+    lastToken = new FloatObject(answer, {isAnswer:true});
   }
-  return tokens;
+  return tokens.slice(0, tokens.length - 1).concat([lastToken]);
 }
 
-var appendOperator = function (tokens, operator, isWaitingForFirstInputAfterEquals) {
+const appendOperator = (tokens, operator, isWaitingForFirstInputAfterEquals) => {
   if (tokens[tokens.length - 1] instanceof FloatObject) {
-    tokens.push(new OperatorObject(""));
+    return tokens.concat(new OperatorObject(operator));
   }
   if (tokens[tokens.length - 1] instanceof OperatorObject) {
-    tokens[tokens.length - 1].displayPart = operator;
+    return tokens.slice(0, tokens.length - 1).concat([new OperatorObject(operator)]);
   }
-  return tokens;
 }
 
-var appendContent = function (tokens, content, isWaitingForFirstInputAfterEquals) {
-  if ((content === ".") && /\./.test(tokens[tokens.length - 1].displayPart) || tokens[tokens.length - 1].isAnswer) {
+const appendContent = (tokens, content, isWaitingForFirstInputAfterEquals) => {
+  let lastToken = tokens[tokens.length - 1];
+  if (((content === ".") && /\./.test(lastToken.displayPart)) || lastToken.isAnswer) {
     return tokens;
   }
-  if (isWaitingForFirstInputAfterEquals || (tokens[tokens.length - 1] instanceof OperatorObject)) {
-    if (isWaitingForFirstInputAfterEquals) {
-      tokens.pop();
-    }
-    tokens.push(new FloatObject("", {isAnswer: false}));
+  if (lastToken instanceof OperatorObject) {
+    return tokens.concat([new FloatObject(content, {isAnswer: false})]);
   }
-  if ((content !== ".") && (tokens[tokens.length - 1].displayPart === "0")) {
-    tokens[tokens.length - 1].displayPart = "";
+  if (isWaitingForFirstInputAfterEquals || ((content !== ".") && (lastToken.displayPart === "0"))) {
+    lastToken = new FloatObject("", {isAnswer: false});
   }
-  tokens[tokens.length - 1].displayPart += content;
-  return tokens;
+  lastToken.displayPart += content;
+  return tokens.slice(0, tokens.length - 1).concat([lastToken]);
 };
 
-function filteredResultForEval (tokens) {
+const filterResultForEval = (tokens) => {
   if (tokens.every(function (currentValue) {
     if (currentValue instanceof FloatObject) {
       return (currentValue.displayPart === "Infinity") || (Number.parseFloat(currentValue.displayPart) == currentValue.displayPart);
@@ -75,9 +76,9 @@ function filteredResultForEval (tokens) {
   throw "Input(2) error.";
 }
 
-var useEval = function (tokens) {
+const useEval = (tokens) => {
   try {
-    var resultFromEval = eval(filteredResultForEval(tokens)).toString();
+    let resultFromEval = eval(filterResultForEval(tokens)).toString();
     if (isNaN(resultFromEval)) {
       throw ("Not a number.");
     }
@@ -89,22 +90,20 @@ var useEval = function (tokens) {
   }
 };
 
-var clearDisplay = function () {
-  return [new FloatObject("0", {isAnswer: false})];
-};
+const clearDisplay = () => [new FloatObject("0", {isAnswer: false})];
 
-var inputsArray = (function () {
-  var arrayButtons = [{content: 'AC', processInput: clearDisplay},
+const inputsArray = (() => {
+  let arrayButtons = [{content: 'AC', processInput: clearDisplay},
     {content: '=', processInput: useEval},
     {content: 'ANS', processInput: appendAnswer},
     {content: ".", processInput: appendContent}
   ];
 
-  for (var i = 0; i <= 9; i++) {
+  for (let i = 0; i <= 9; i++) {
     arrayButtons.push({content: i.toString(), processInput: appendContent});
   }
 
-  for (operators in operatorSet) {
+  for (let operators in operatorSet) {
     arrayButtons.push({content: operators, processInput: appendOperator});
   }
   return arrayButtons;
@@ -130,14 +129,16 @@ var app = new Vue ({
   },
   methods: {
     respondToInput: function (input) {
+      const {tokens, answer, isWaitingForFirstInputAfterEquals} = this;
       if (input.content === "ANS") {
-        this.tokens = input.processInput(this.tokens, this.answer, this.isWaitingForFirstInputAfterEquals);
+        this.tokens = input.processInput(tokens, answer, isWaitingForFirstInputAfterEquals);
       } else {
-        this.tokens = input.processInput(this.tokens, input.content, this.isWaitingForFirstInputAfterEquals);
+        this.tokens = input.processInput(tokens, input.content, isWaitingForFirstInputAfterEquals);
       }
-      if ((this.tokens[this.tokens.length - 1].isAnswer) && (input.content === "=")) {
-        this.tokens[this.tokens.length - 1].isAnswer = false;
-        this.answer = this.tokens[this.tokens.length - 1].displayPart;
+      let lastToken = this.tokens[this.tokens.length - 1];
+      if ((lastToken.isAnswer) && (input.content === "=")) {
+        lastToken.isAnswer = false;
+        this.answer = lastToken.displayPart;
         this.isWaitingForFirstInputAfterEquals = true;
         return;
       }
