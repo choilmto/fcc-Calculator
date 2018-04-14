@@ -2,10 +2,13 @@
   width: 264px;
 }
 
-.calculator-display {
+.calculator-display-inner {
+  float: right;
+}
+
+.calculator-display-outer {
   height: 30px;
-  text-align: right;
-  text-overflow: hidden;
+  overflow: hidden;
 }
 
 .calculator-buttons {

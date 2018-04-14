@@ -131,9 +131,7 @@ var app = new Vue ({
   },
   computed: {
     display: function () {
-      const DISPLAY_LENGTH = 33;
-      let fullDisplayString = this.tokens.reduce((accumulator, currentValue) => accumulator + currentValue.displayPart, "");
-      return fullDisplayString.substr(fullDisplayString.length < DISPLAY_LENGTH ? 0 : fullDisplayString.length - DISPLAY_LENGTH, DISPLAY_LENGTH);
+      return this.tokens.reduce((accumulator, currentValue) => accumulator + currentValue.displayPart, "");
     }
   },
   methods: {

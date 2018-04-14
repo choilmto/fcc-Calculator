@@ -1,13 +1,15 @@
 <html>
 <head>
-</head>
   <link rel="stylesheet" type="text/css" href="styling.css">
+</head>
 <body>
 
 <div class="outer-div">
   <div id="app" class="calculator-housing">
-    <div id="display" class="calculator-display">
-      {{display}}
+    <div class="calculator-display-outer">
+      <div id="display" class="calculator-display-inner">
+        {{display}}
+      </div>
     </div>
     <button-draw
       v-for="input in inputs"
