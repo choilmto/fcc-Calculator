@@ -1,17 +1,19 @@
 <html>
 <head>
 </head>
-
+  <link rel="stylesheet" type="text/css" href="styling.css">
 <body>
 
-<div id="app">
-  <button-draw
-    v-for="input in inputs"
-    v-bind:content="input.content"
-    v-on:press="respondToInput(input)"
-  ></button-draw>
-  <div id="display">
-    {{display}}
+<div class="outer-div">
+  <div id="app" class="calculator-housing">
+    <div id="display" class="calculator-display">
+      {{display}}
+    </div>
+    <button-draw
+      v-for="input in inputs"
+      v-bind:content="input.content"
+      v-on:press="respondToInput(input)"
+    ></button-draw>
   </div>
 </div>
 

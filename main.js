@@ -1,8 +1,12 @@
+/*To extend the operators available in the calculator,
+  add a key-pair value in operatorSet.
+  eg. "log": Math.log()
+*/
 const operatorSet = {
   "+": "+",
   "-": "-",
   "/": "/",
-  "*": "*"
+  "\u00D7": "*"
 };
 
 class FloatObject {
@@ -17,6 +21,9 @@ class OperatorObject {
     this.displayPart = operator;
   }
 }
+/*In the future, I might want to implement an ErrorClass instead of using
+  a FloatObject.
+*/
 
 const appendAnswer = (tokens, answer, isWaitingForFirstInputAfterEquals) => {
   if (answer === "") {
@@ -85,8 +92,8 @@ const useEval = (tokens) => {
     return [new FloatObject(resultFromEval, {isAnswer: true})];
   }
   catch(e) {
-    window.alert(e);
-    return clearDisplay();
+    console.log(e);
+    return [new FloatObject("ERROR", {isAnswer:true})];
   }
 };
 
@@ -94,24 +101,24 @@ const clearDisplay = () => [new FloatObject("0", {isAnswer: false})];
 
 const inputsArray = (() => {
   let arrayButtons = [{content: 'AC', processInput: clearDisplay},
-    {content: '=', processInput: useEval},
-    {content: 'ANS', processInput: appendAnswer},
-    {content: ".", processInput: appendContent}
+    {content: 'ANS', processInput: appendAnswer}
   ];
-
-  for (let i = 0; i <= 9; i++) {
-    arrayButtons.push({content: i.toString(), processInput: appendContent});
-  }
 
   for (let operators in operatorSet) {
     arrayButtons.push({content: operators, processInput: appendOperator});
   }
+
+  [7, 8, 9, 4, 5, 6, 1, 2, 3, 0].forEach((element) => arrayButtons.push({content: element.toString(), processInput: appendContent}));
+
+  arrayButtons.push({content: ".", processInput: appendContent});
+  arrayButtons.push({content: '=', processInput: useEval});
+
   return arrayButtons;
 })();
 
 Vue.component('button-draw', {
   props: ['content'],
-  template: '<button v-on:click="$emit(\'press\')">{{content}}</button>'
+  template: '<button v-on:click="$emit(\'press\')" class="calculator-buttons">{{content}}</button>'
 });
 
 var app = new Vue ({
@@ -124,7 +131,9 @@ var app = new Vue ({
   },
   computed: {
     display: function () {
-      return this.tokens.reduce((accumulator, currentValue) => accumulator + currentValue.displayPart, "");
+      const DISPLAY_LENGTH = 33;
+      let fullDisplayString = this.tokens.reduce((accumulator, currentValue) => accumulator + currentValue.displayPart, "");
+      return fullDisplayString.substr(fullDisplayString.length < DISPLAY_LENGTH ? 0 : fullDisplayString.length - DISPLAY_LENGTH, DISPLAY_LENGTH);
     }
   },
   methods: {
@@ -138,7 +147,7 @@ var app = new Vue ({
       let lastToken = this.tokens[this.tokens.length - 1];
       if ((lastToken.isAnswer) && (input.content === "=")) {
         lastToken.isAnswer = false;
-        this.answer = lastToken.displayPart;
+        this.answer = lastToken.displayPart === "ERROR" ? "" : lastToken.displayPart;
         this.isWaitingForFirstInputAfterEquals = true;
         return;
       }
